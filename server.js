@@ -24,7 +24,16 @@ app.get('/', (req, res) => {
 
 io.on("connection", (socket) => {
     console.log("User Connected", socket.id);
-})
+
+    socket.on("send-location", (data) => {
+        console.log(data);
+        io.emit("receive-location", {id: socket.id, ...data});
+    });
+
+    socket.on("disconnect", () => {
+        io.emit("user-disconnected", socket.id);
+    });
+});
 
 const PORT = process.env.PORT || 4000
 httpServer.listen(PORT, () => {
