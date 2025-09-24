@@ -1,5 +1,7 @@
 const socket = io();
-const map = L.map("map").setView([27.7172, 85.3240], 16);
+
+// Leaflet map
+const map = L.map("map").setView([27.7172, 85.3240], 16);   // Kathmandu default
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "open streetmap"
 }).addTo(map);
@@ -20,3 +22,18 @@ if (navigator.geolocation) {
         }
     );
 }
+
+//store markers for each user/device
+const markers = {};
+
+//receive locations from others
+socket.on("receive-location", (data) => {
+    const { id, latitude, longitude } = data;
+
+    //if a marker already exists for this device
+    if (markers[id]) {
+        markers[id].setLatLng([latitude, longitude]);   //update the coordinates
+    } else {
+        markers[id] = L.marker([latitude, longitude]).addTo(map);   //add the coordinates to map
+    }
+});
