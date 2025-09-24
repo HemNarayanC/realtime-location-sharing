@@ -1,7 +1,7 @@
 const socket = io();
 
 // Leaflet map
-const map = L.map("map").setView([27.7172, 85.3240], 16);   // Kathmandu default
+const map = L.map("map").setView([27.7172, 85.3240], 10);   // Kathmandu default
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "open streetmap"
 }).addTo(map);
@@ -11,6 +11,7 @@ if (navigator.geolocation) {
     navigator.geolocation.watchPosition((position) => {
         const { latitude, longitude } = position.coords;
         socket.emit("send-location", { latitude, longitude });
+        map.setView([latitude, longitude], 10);
     },
         (error) => {
             console.log(error);
@@ -35,5 +36,13 @@ socket.on("receive-location", (data) => {
         markers[id].setLatLng([latitude, longitude]);   //update the coordinates
     } else {
         markers[id] = L.marker([latitude, longitude]).addTo(map);   //add the coordinates to map
+    }
+});
+
+// remove marker on disconnect
+socket.on("user-disconnected", (id) => {
+    if(markers[id]){
+        map.removeLayer(markers[id]);
+        delete markers[id];
     }
 });
